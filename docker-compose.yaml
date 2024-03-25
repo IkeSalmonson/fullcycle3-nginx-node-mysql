@@ -8,36 +8,35 @@ services:
       dockerfile: Dockerfile.prod 
     image: ikesalmonson/node_app_proxy:prod
     container_name: app   
-    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s  node index.js 
+    entrypoint: sh -c "npm install && npm run  node_start " 
     networks: 
       - node-network
     volumes: 
       - ./node:/usr/src/app
-    tty: true  
+      - /usr/src/app/node_modules
 
-    depends_on: 
-      - db  
+    tty: true  
+    depends_on:
+      db:
+        condition: service_healthy
+
+   
 
   nginx:
-    build: 
-      context: ./nginx
-      dockerfile: Dockerfile.prod 
-    image: ikesalmonson/nginx_app_proxy:prod
+    image: nginx:1.24.0-alpine
     container_name: nginx
-    entrypoint: dockerize -wait tcp://app:3000 -timeout 20s  nginx -g "daemon off;"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - node-network 
     ports: 
       - 8080:80
-    depends_on: 
-      - db
+    depends_on:
       - app  
- 
 
   db:
     image: mysql:5.7
-    command:
-      - --innodb-use-native-aio=0
+ 
 
     container_name: db
     restart: always 
@@ -48,6 +47,11 @@ services:
       - MYSQL_DATABASE=nodedb
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_USER = root
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     networks:     
       - node-network  
 
