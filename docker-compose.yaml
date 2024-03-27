@@ -8,12 +8,11 @@ services:
       dockerfile: Dockerfile.prod 
     image: ikesalmonson/node_app_proxy:prod
     container_name: app   
-    entrypoint: sh -c "npm run  node_start " 
+    entrypoint: sh -c "npm install -y && npm run  node_start " 
     networks: 
       - node-network
     volumes: 
-      - ./node:/usr/src/app
-      - /usr/src/app/node_modules
+      - ./node:/usr/src/app 
 
     tty: true  
     depends_on:
