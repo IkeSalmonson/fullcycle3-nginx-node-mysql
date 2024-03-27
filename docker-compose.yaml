@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile.prod 
     image: ikesalmonson/node_app_proxy:prod
     container_name: app   
-    entrypoint: sh -c "npm install && npm run  node_start " 
+    entrypoint: sh -c "npm run  node_start " 
     networks: 
       - node-network
     volumes: 
